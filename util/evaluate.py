@@ -40,9 +40,9 @@ def eval(model,loss_func,test_loader,once=False):
         loss = loss_func(pred, target).to(device)
         cnt=count_right(pred,target)
         total_cnt+=cnt
-        print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)))
+        print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
         if once==True:return cnt/len(target)
-    print("total acc: %d/%d" % (total_cnt,len(test_dataset)))
+    print("total acc: %d/%d" % (total_cnt,len(test_dataset)), flush=True)
     return total_cnt/len(test_dataset)
 
 

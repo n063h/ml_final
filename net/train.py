@@ -6,10 +6,10 @@ from net.loss import Loss
 from net.network import ResNet
 from torch.autograd import Variable
 from util.evaluate import eval
-import warnings
+import warnings,sys,os
 warnings.filterwarnings("ignore", category=UserWarning)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-epoch = 50
+epoch = 80
 lr = 0.01
 
 def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
@@ -26,8 +26,8 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         if epoch in [20,30,40]:
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
-        print('\n\nStarting epoch %d / %d' % (e + 1, epoch))
-        print('Learning Rate for this epoch: {}'.format(lr))
+        print('\n\nStarting epoch %d / %d' % (e + 1, epoch), flush=True)
+        print('Learning Rate for this epoch: {}'.format(lr), flush=True)
 
         for i,(a,b,target,real_size) in enumerate(train_loader):
             a = Variable(a.to(device))
@@ -40,16 +40,16 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss))
+            print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss), flush=True)
             epoch_loss = epoch_loss + loss
-        print("Epoch %d/%d| MeanLoss: %.2f" % (e + 1, epoch, epoch_loss/len(train_loader)))
+        print("Epoch %d/%d| MeanLoss: %.2f" % (e + 1, epoch, epoch_loss/len(train_loader)), flush=True)
         #训练时只测试一次
         eval_acc=eval(model,loss_func,test_loader,once=True)
         if (e+1)%10==0:
             best_eval_acc, best_eval_epoch = eval_acc, e if eval_acc > best_eval_acc else best_eval_acc, best_eval_epoch
-            torch.save(model.state_dict(), './model/epoch'+model_name+str(e+1)+'.pth')
+            torch.save(model.state_dict(), './model/epoch'+str(e+1)+model_name+'.pth')
 
-    print("Epoch %d has best eval_acc %.2f" % (best_eval_epoch+1,best_eval_acc))
+    print("Epoch %d has best eval_acc %.2f" % (best_eval_epoch+1,best_eval_acc), flush=True)
 
 
 if __name__ == '__main__':
@@ -71,7 +71,25 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     resnet = ResNet(6*6*15)
-    model=resnet.resnet18(pretrained=True).to(device)
     loss_func = Loss()
+
+    model=resnet.resnet18(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18')
+
+    model=resnet.resnet34(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
     t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34')
+
+    model=resnet.resnet50(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet50')
+
+    model=resnet.resnet101(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet101')
+
+    model=resnet.resnet152(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet152')
+    os.system("/root/shutdown")
