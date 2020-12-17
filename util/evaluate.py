@@ -33,10 +33,11 @@ def eval(model,loss_func,test_loader,once=False):
     for i, (a, b, target, real_size) in enumerate(test_loader):
         a = a.to(device)
         b = b.to(device)
+        target = target[:, :, :, [1, 2, 14]]
         target = target.to(device)
         a_pred = model(a).to(device)
         b_pred = model(b).to(device)
-        pred = (a_pred - b_pred).view(-1, 6, 6, 15)
+        pred = (a_pred - b_pred).view(-1, 6, 6, 3)
         loss = loss_func(pred, target).to(device)
         cnt=count_right(pred,target)
         total_cnt+=cnt
