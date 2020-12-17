@@ -30,12 +30,14 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         print('Learning Rate for this epoch: {}'.format(lr), flush=True)
 
         for i,(a,b,target,real_size) in enumerate(train_loader):
+            batch_size,s,_,cls=target.shape
             a = Variable(a.to(device))
             b = Variable(b.to(device))
+            target=target[:,:,:,[1,2,14]]
             target = Variable(target.to(device))
             a_pred = model(a).to(device)
             b_pred = model(b).to(device)
-            pred=(a_pred-b_pred).view(-1,6,6,15)
+            pred=(a_pred-b_pred).view(-1,6,6,3)
             loss = loss_func(pred, target).to(device)
             optimizer.zero_grad()
             loss.backward()
@@ -46,7 +48,8 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         #训练时只测试一次
         eval_acc=eval(model,loss_func,test_loader,once=True)
         if (e+1)%10==0:
-            best_eval_acc, best_eval_epoch = eval_acc, e if eval_acc > best_eval_acc else best_eval_acc, best_eval_epoch
+            if eval_acc > best_eval_acc:
+                best_eval_acc, best_eval_epoch = eval_acc, e
             torch.save(model.state_dict(), './model/epoch'+str(e+1)+model_name+'.pth')
 
     print("Epoch %d has best eval_acc %.2f" % (best_eval_epoch+1,best_eval_acc), flush=True)
@@ -70,7 +73,7 @@ if __name__ == '__main__':
     sampler = WeightedRandomSampler(weight, len(test_dataset))
     test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
-    resnet = ResNet(6*6*15)
+    resnet = ResNet(6*6*3)
     loss_func = Loss()
 
     model=resnet.resnet18(pretrained=True).to(device)
