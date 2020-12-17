@@ -1,34 +1,19 @@
-import dataset as d,util,torch
+import dataset as d,torch
 import torchvision.transforms as transforms
-import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.data import WeightedRandomSampler
 from net.loss import Loss
-from net.resnet import *
-import torchvision
+from net.network import ResNet
 from torch.autograd import Variable
+from util.evaluate import eval
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+epoch = 50
+lr = 0.01
 
+def t(train_loader,test_loader,model,loss_func,optimizer,lr):
 
-
-
-def t():
-    epoch = 50
-    lr = 0.01
-
-    train_dataset = d.dataset('./dataset/train_data.txt', transform=[transforms.ToTensor()])
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=False)
-    test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
-    test_loader = DataLoader(train_dataset, batch_size=32, shuffle=False)
-
-
-    #model = ResNet()
-    model=torchvision.models.resnet34(pretrained=True)
-    numFit = model.fc.in_features
-    model.fc = nn.Linear(numFit, 6*6*15)
-    loss_func = Loss()
-    optimizer = torch.optim.SGD(model.parameters(),lr=lr,momentum=0.9,weight_decay=0.0005)
     torch.autograd.set_detect_anomaly(True)
     for e in range(epoch):
         model.train()
@@ -54,13 +39,32 @@ def t():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss))
+            # print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss))
             epoch_loss = epoch_loss + loss
         print("Epoch %d/%d| MeanLoss: %.2f" % (e + 1, epoch, epoch_loss/len(train_loader)))
+        #训练时只测试一次
+        eval(model,loss_func,test_loader,once=True)
         if (e+1)%10==0:
-            torch.save(model.state_dict(), './model/epoch"+str(e+1)+".pth')
+            torch.save(model.state_dict(), './model/epoch'+str(e+1)+'.pth')
             # compute_val_map(model)
 
 
 if __name__ == '__main__':
-    t()
+
+
+    train_dataset = d.dataset('./dataset/train_data.txt', transform=[transforms.ToTensor()])
+    dict = {'1': 0, '2': 1, '14': 2}
+    count = [train_dataset.labels.count(1), train_dataset.labels.count(2), train_dataset.labels.count(14)]
+    weight = torch.Tensor([count[dict[str(j)]] for j in train_dataset.labels])/len(train_dataset)
+    weight=1/weight
+    sampler = WeightedRandomSampler(weight, len(train_dataset))
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler)
+
+    test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
+    test_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+
+    resnet = ResNet(6*6*15)
+    model=resnet.resnet34(pretrained=True).to(device)
+    loss_func = Loss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr)
