@@ -41,8 +41,9 @@ def eval(model,loss_func,test_loader,once=False):
         cnt=count_right(pred,target)
         total_cnt+=cnt
         print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)))
-        if once==True:return
+        if once==True:return cnt/len(target)
     print("total acc: %d/%d" % (total_cnt,len(test_dataset)))
+    return total_cnt/len(test_dataset)
 
 
 

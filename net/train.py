@@ -12,8 +12,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 epoch = 50
 lr = 0.01
 
-def t(train_loader,test_loader,model,loss_func,optimizer,lr):
-
+def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
+    best_eval_acc=0
+    best_eval_epoch = 0
     torch.autograd.set_detect_anomaly(True)
     for e in range(epoch):
         model.train()
@@ -39,14 +40,16 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            # print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss))
+            print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss))
             epoch_loss = epoch_loss + loss
         print("Epoch %d/%d| MeanLoss: %.2f" % (e + 1, epoch, epoch_loss/len(train_loader)))
         #训练时只测试一次
-        eval(model,loss_func,test_loader,once=True)
+        eval_acc=eval(model,loss_func,test_loader,once=True)
         if (e+1)%10==0:
-            torch.save(model.state_dict(), './model/epoch'+str(e+1)+'.pth')
-            # compute_val_map(model)
+            best_eval_acc, best_eval_epoch = eval_acc, e if eval_acc > best_eval_acc else best_eval_acc, best_eval_epoch
+            torch.save(model.state_dict(), './model/epoch'+model_name+str(e+1)+'.pth')
+
+    print("Epoch %d has best eval_acc %.2f" % (best_eval_epoch+1,best_eval_acc))
 
 
 if __name__ == '__main__':
@@ -68,7 +71,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     resnet = ResNet(6*6*15)
-    model=resnet.resnet34(pretrained=True).to(device)
+    model=resnet.resnet18(pretrained=True).to(device)
     loss_func = Loss()
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr)
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34')
