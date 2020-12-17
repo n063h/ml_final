@@ -61,7 +61,11 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
-    test_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    count = [test_dataset.labels.count(1), test_dataset.labels.count(2), test_dataset.labels.count(14)]
+    weight = torch.Tensor([count[dict[str(j)]] for j in test_dataset.labels])/len(test_dataset)
+    weight=1/weight
+    sampler = WeightedRandomSampler(weight, len(test_dataset))
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     resnet = ResNet(6*6*15)
     model=resnet.resnet34(pretrained=True).to(device)
