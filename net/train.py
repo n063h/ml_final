@@ -65,6 +65,12 @@ if __name__ == '__main__':
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ]
+    test_transformer = [
+        transforms.ToPILImage(),
+        transforms.Resize((600,600)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ]
 
     train_dataset = d.dataset('./dataset/train_data.txt', transform=train_transformer)
     dict = {'1': 0, '2': 1, '14': 2}
@@ -74,7 +80,7 @@ if __name__ == '__main__':
     sampler = WeightedRandomSampler(weight, len(train_dataset))
     train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False,sampler=sampler)
 
-    test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
+    test_dataset = d.dataset('./dataset/test_data.txt', transform=test_transformer)
     count = [test_dataset.labels.count(1), test_dataset.labels.count(2), test_dataset.labels.count(14)]
     weight = torch.Tensor([count[dict[str(j)]] for j in test_dataset.labels])/len(test_dataset)
     weight=1/weight
