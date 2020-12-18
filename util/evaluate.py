@@ -30,6 +30,7 @@ def count_right(pred_tensor, target_tensor):
 def eval(model,loss_func,test_loader,once=False):
     model.eval()
     total_cnt=0
+    total=0
     for i, (a, b, target, real_size) in enumerate(test_loader):
         a = a.to(device)
         b = b.to(device)
@@ -41,10 +42,11 @@ def eval(model,loss_func,test_loader,once=False):
         loss = loss_func(pred, target).to(device)
         cnt=count_right(pred,target)
         total_cnt+=cnt
+        total+=len(target)
         print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
         if once==True:return cnt/len(target)
-    print("total acc: %d/%d" % (total_cnt,len(test_dataset)), flush=True)
-    return total_cnt/len(test_dataset)
+    print("total acc: %d/%d" % (total_cnt,total), flush=True)
+    return total_cnt/total
 
 
 
