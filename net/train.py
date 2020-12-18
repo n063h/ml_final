@@ -42,17 +42,17 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print("Epoch %d/%d| Step %d/%d Loss: %.2f"%(e+1,epoch,i+1,len(train_loader),loss), flush=True)
+            print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
             epoch_loss = epoch_loss + loss
-        print("Epoch %d/%d| MeanLoss: %.2f" % (e + 1, epoch, epoch_loss/len(train_loader)), flush=True)
+        print("%s :Epoch %d/%d| MeanLoss: %.2f" % (model_name,e + 1, epoch, epoch_loss/len(train_loader)), flush=True)
         #训练时只测试一次
-        eval_acc=eval(model,loss_func,test_loader,once=True)
+        eval_acc=eval(model,loss_func,test_loader)
         if (e+1)%10==0:
             if eval_acc > best_eval_acc:
                 best_eval_acc, best_eval_epoch = eval_acc, e
             torch.save(model.state_dict(), './model/epoch'+str(e+1)+model_name+'.pth')
 
-    print("Epoch %d has best eval_acc %.2f" % (best_eval_epoch+1,best_eval_acc), flush=True)
+    print("%s :Epoch %d has best eval_acc %.2f" % (model_name,best_eval_epoch+1,best_eval_acc), flush=True)
 
 
 if __name__ == '__main__':
@@ -64,35 +64,34 @@ if __name__ == '__main__':
     weight = torch.Tensor([count[dict[str(j)]] for j in train_dataset.labels])/len(train_dataset)
     weight=1/weight
     sampler = WeightedRandomSampler(weight, len(train_dataset))
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler)
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False,sampler=sampler)
 
     test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
     count = [test_dataset.labels.count(1), test_dataset.labels.count(2), test_dataset.labels.count(14)]
     weight = torch.Tensor([count[dict[str(j)]] for j in test_dataset.labels])/len(test_dataset)
     weight=1/weight
     sampler = WeightedRandomSampler(weight, len(test_dataset))
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
+    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False,sampler=sampler)
 
     resnet = ResNet(6*6*3)
     loss_func = Loss()
 
     model=resnet.resnet18(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18WithSqrtLoss')
 
     model=resnet.resnet34(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34WithSqrtLoss')
 
     model=resnet.resnet50(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet50')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet50WithSqrtLoss')
 
     model=resnet.resnet101(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet101')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet101WithSqrtLoss')
 
     model=resnet.resnet152(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet152')
-    os.system("/root/shutdown")
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet152WithSqrtLoss')
