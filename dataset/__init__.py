@@ -46,7 +46,7 @@ class dataset(Dataset):
         img = np.array(Image.open(img_path))
         img = img.transpose((1, 0, 2))
         #image = np.resize(img, (self.img_size, self.img_size, 3))
-        for t in self.transform.transforms:
+        for t in self.transform:
             img = t(img)
         return img
 
