@@ -89,6 +89,7 @@ class Vgg(nn.Module):
     def change_output(self,model,load_path=None,):
         numFit = model.classifier._modules['6'].in_features
         model.classifier._modules['6'] = nn.Linear(numFit, self.output_num)
+        model.classifier._modules['7'] = torch.nn.LogSoftmax(dim=1)
         if load_path != None:
             model.load_state_dict(torch.load(load_path),map_location=device)
         return model
