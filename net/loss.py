@@ -26,7 +26,7 @@ class Loss(nn.Module):
         class_pred= class_pred.relu()
 
         class_loss = F.mse_loss(class_pred, class_target, size_average=False)
-        #class_loss = F.pairwise_distance(class_pred, class_target, p=2)
+        #class_loss = F.pairwise_distance(class_pred, class_target, p=2).sum()
 
         return class_loss/ batch_size
 

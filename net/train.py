@@ -56,7 +56,14 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
 
 
 if __name__ == '__main__':
-
+    train_transformer = transforms.Compose([
+        transforms.Resize((600,600)),
+        transforms.RandomResizedCrop(600,scale=(0.7,1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
     train_dataset = d.dataset('./dataset/train_data.txt', transform=[transforms.ToTensor()])
     dict = {'1': 0, '2': 1, '14': 2}

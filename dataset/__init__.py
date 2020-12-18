@@ -45,7 +45,7 @@ class dataset(Dataset):
     def get_img(self,img_path):
         img = np.array(Image.open(img_path))
         img = img.transpose((1, 0, 2))
-        image = np.resize(img, (self.img_size, self.img_size, 3))
+        #image = np.resize(img, (self.img_size, self.img_size, 3))
         for t in self.transform:
             image = t(image)
         return image
