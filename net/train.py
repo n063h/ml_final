@@ -86,6 +86,7 @@ if __name__ == '__main__':
     vgg=Vgg(3)
     # loss_func = featureMapLoss()
     loss_func = nn.CrossEntropyLoss()
+    vgg_loss_func=nn.NLLLoss()
 
     # model=resnet.resnet18(pretrained=True).to(device)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
@@ -97,19 +98,19 @@ if __name__ == '__main__':
 
     model = vgg.vgg11(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, loss_func, optimizer, lr, 'vgg11WithSqrtLoss')
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11WithSqrtLoss')
 
     model = vgg.vgg19(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, loss_func, optimizer, lr, 'vgg19WithSqrtLoss')
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19WithSqrtLoss')
 
     model = vgg.vgg11_bn(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, loss_func, optimizer, lr, 'vgg11_bnWithSqrtLoss')
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11_bnWithSqrtLoss')
 
     model = vgg.vgg19_bn(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, loss_func, optimizer, lr, 'vgg19_bnWithSqrtLoss')
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19_bnWithSqrtLoss')
 
     model=resnet.resnet50(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
