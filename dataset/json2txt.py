@@ -1,4 +1,4 @@
-import os,json
+import os,json,random
 
 def get_obj(filename):
     with open(filename,'r') as f:
@@ -32,6 +32,7 @@ def read(data_root):
 
 def write(txt_path,data):
     with open(txt_path,'w') as f:
+        random.shuffle(data)
         for d in data:
             if d['cls']!=1 and d['cls']!=2 and d['cls']!=14:continue
             obj_box=d['img_obj']

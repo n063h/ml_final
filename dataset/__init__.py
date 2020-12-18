@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset,DataLoader
 import numpy as np
-import torch
+import torch,cv2
 from PIL import Image
 import torchvision.transforms as transforms
 
@@ -17,6 +17,7 @@ class dataset(Dataset):
         self.grid_num=6
         self.grid_size=int(self.img_size/self.grid_num)
         self.class_num=15
+        self.dict={'1':0,"2":1,"14":2}
         with open(txt_path) as f:
             lines= f.readlines()
         self.labels =[]
@@ -28,7 +29,7 @@ class dataset(Dataset):
             blocks=line.split(' ')
             self.a_paths.append(blocks[0])
             self.b_paths.append(blocks[1])
-            self.labels.append(int(blocks[2]))
+            self.labels.append(self.dict[blocks[2]])
             img = np.array(Image.open(blocks[0]))
             # open 出来是 h,w,c
             real_size=[img.shape[1],img.shape[0]]
@@ -43,24 +44,27 @@ class dataset(Dataset):
 
 
     def get_img(self,img_path):
-        img = np.array(Image.open(img_path))
+        img = cv2.imread(img_path)
         img = img.transpose((1, 0, 2))
         #image = np.resize(img, (self.img_size, self.img_size, 3))
         for t in self.transform:
             img = t(img)
         return img
 
+    def get_sub_img(self,a,b):
+        a = cv2.imread(a)
+        b=cv2.imread(b)
+        a=cv2.resize(a,(self.img_size,self.img_size))
+        b = cv2.resize(b, (self.img_size, self.img_size))
+        img=b-a
+        for t in self.transform:
+            img = t(img)
+        return img
 
     def __getitem__(self,index):
-        a=self.get_img(self.a_paths[index])
-        b = self.get_img(self.b_paths[index])
-        box=self.boxes[index]
+        a=self.get_sub_img(self.a_paths[index],self.b_paths[index])
         label=self.labels[index]
-        real_size=self.real_size[index]
-        # target = self.format(box, label,real_size)  # 6*6*15
-        target = torch.zeros(self.class_num)
-        target[label]=1
-        return a,b,label,real_size
+        return a,label
 
     def convert_box(self,xmin,xmax,ymin,ymax,real_size):
         x=(xmin+xmax)/(2*real_size[0])

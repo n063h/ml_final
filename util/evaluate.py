@@ -10,17 +10,15 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def count_right(pred_tensor, target_tensor):
     '''
-    pred_tensor: (tensor) size(batchsize,S,S,15) [x,y,w,h,c]
-    target_tensor: (tensor) size(batchsize,S,S,15)
+    pred_tensor: (tensor) size(batchsize,3 )
+    target_tensor: (tensor) size(batchsize,)
     '''
     cnt=0
-    # batch_size, s, _, cls_size = pred_tensor.shape
     batch_size, cls_size = pred_tensor.shape
     for i in range(batch_size):
-
         class_target= target_tensor[i]
         class_pred= pred_tensor[i]
-        cnt+=1 if class_target.argmax()==class_pred.argmax() else 0
+        cnt+=1 if class_target==class_pred.argmax() else 0
 
     return cnt
 
@@ -28,24 +26,24 @@ def count_right(pred_tensor, target_tensor):
 
 
 def eval(model,loss_func,test_loader,once=False):
-    model.eval()
+
     total_cnt=0
     total=0
-    for i, (a, b, target, real_size) in enumerate(test_loader):
-        batch_size = target.shape[0]
+    for i, (b,target) in enumerate(test_loader):
+        model.eval()
+        batch_size = len(target)
         b =b.to(device)
         target = target.to(device)
-        target = torch.LongTensor([dict[str(int(t))] for t in target])
-        #a_pred = model(a).to(device)
         b_pred = model(b).to(device)
-        #pred = (a_pred - b_pred).view(-1, 6, 6, 3)
         loss = loss_func(b_pred, target).to(device)
         cnt=count_right(b_pred,target)
         total_cnt+=cnt
         total+=len(target)
         print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
+        model.train()
         if once==True:return cnt/len(target)
     print("total acc: %d/%d" % (total_cnt,total), flush=True)
+
     return total_cnt/total
 
 

@@ -8,10 +8,11 @@ from torch.autograd import Variable
 from util.evaluate import eval
 import warnings,sys,os
 warnings.filterwarnings("ignore", category=UserWarning)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 epoch = 80
 lr = 0.01
 dict = {'1': 0, '2': 1, '14': 2}
+
 def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
     best_eval_acc=0
     best_eval_epoch = 0
@@ -29,12 +30,10 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         print('\n\nStarting epoch %d / %d' % (e + 1, epoch), flush=True)
         print('Learning Rate for this epoch: {}'.format(lr), flush=True)
 
-        for i,(a,b,target,real_size) in enumerate(train_loader):
-            batch_size=target.shape[0]
+        for i,(b,target) in enumerate(train_loader):
+            batch_size=len(target)
             b = Variable(b.to(device))
             target = Variable(target.to(device))
-            target = torch.LongTensor([dict[str(int(t))] for t in target])
-            # a_pred = model(a).to(device)
             b_pred = model(b).to(device)
             # pred=(a_pred-b_pred).view(-1,6,6,3)
             loss = loss_func(b_pred, target).to(device)
@@ -46,11 +45,9 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         print("%s :Epoch %d/%d| MeanLoss: %.2f" % (model_name,e + 1, epoch, epoch_loss/len(train_loader)), flush=True)
         #训练时只测试一次
         eval_acc=eval(model,loss_func,test_loader)
-        if (e+1)%10==0:
-            if eval_acc > best_eval_acc:
-                best_eval_acc, best_eval_epoch = eval_acc, e
-            torch.save(model.state_dict(), './model/epoch'+str(e+1)+model_name+'.pth')
-
+        if eval_acc > best_eval_acc:
+            best_eval_acc, best_eval_epoch = eval_acc, e
+        torch.save(model.state_dict(), './model/epoch' + str(e + 1) + model_name + '.pth')
     print("%s :Epoch %d has best eval_acc %.2f" % (model_name,best_eval_epoch+1,best_eval_acc), flush=True)
 
 
@@ -72,19 +69,18 @@ if __name__ == '__main__':
     ]
 
     train_dataset = d.dataset('./dataset/train_data.txt', transform=train_transformer)
-
-    count = [train_dataset.labels.count(1), train_dataset.labels.count(2), train_dataset.labels.count(14)]
-    weight = torch.Tensor([count[dict[str(j)]] for j in train_dataset.labels])/len(train_dataset)
+    count = [train_dataset.labels.count(0), train_dataset.labels.count(1), train_dataset.labels.count(2)]
+    weight = torch.Tensor([count[j] for j in train_dataset.labels])/len(train_dataset)
     weight=1/weight
     sampler = WeightedRandomSampler(weight, len(train_dataset))
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False,sampler=sampler)
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     test_dataset = d.dataset('./dataset/test_data.txt', transform=test_transformer)
-    count = [test_dataset.labels.count(1), test_dataset.labels.count(2), test_dataset.labels.count(14)]
-    weight = torch.Tensor([count[dict[str(j)]] for j in test_dataset.labels])/len(test_dataset)
+    count = [test_dataset.labels.count(0), test_dataset.labels.count(1), test_dataset.labels.count(2)]
+    weight = torch.Tensor([count[j] for j in test_dataset.labels])/len(test_dataset)
     weight=1/weight
     sampler = WeightedRandomSampler(weight, len(test_dataset))
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False,sampler=sampler)
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler)
 
     resnet = ResNet(3)
     # loss_func = featureMapLoss()

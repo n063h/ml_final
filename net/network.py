@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn.functional as F
 import torchvision
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152']
 
@@ -27,8 +27,7 @@ class ResNet(nn.Module):
         numFit = model.fc.in_features
         model.fc = nn.Linear(numFit, self.output_num)
         if load_path != None:
-            model.load_state_dict(torch.load(load_path))
-            # model.load_state_dict(torch.load(load_path, map_location='cpu'))
+            model.load_state_dict(torch.load(load_path),map_location=device)
         return model
 
     def resnet18(self,load_path=None,pretrained=False):
