@@ -80,3 +80,52 @@ class ResNet(nn.Module):
         model = torchvision.models.resnet152(pretrained=pretrained)
         model = self.change_output(model, load_path)
         return model
+
+class Vgg(nn.Module):
+    def __init__(self,output_num=3):
+        super(Vgg, self).__init__()
+        self.output_num=output_num
+
+    def change_output(self,model,load_path=None,):
+        numFit = model.classifier._modules['6'].in_features
+        model.classifier._modules['6'] = nn.Linear(numFit, self.output_num)
+        if load_path != None:
+            model.load_state_dict(torch.load(load_path),map_location=device)
+        return model
+
+    def vgg11(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.vgg11(pretrained=pretrained)
+        model=self.change_output(model,load_path)
+        return model
+
+    def vgg19(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.vgg19(pretrained=pretrained)
+        model=self.change_output(model,load_path)
+        return model
+
+    def vgg11_bn(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.vgg11_bn(pretrained=pretrained)
+        model=self.change_output(model,load_path)
+        return model
+
+    def vgg19_bn(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.vgg19_bn(pretrained=pretrained)
+        model=self.change_output(model,load_path)
+        return model
+
