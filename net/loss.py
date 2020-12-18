@@ -23,10 +23,10 @@ class Loss(nn.Module):
             class_target[i]=target_tensor[i][j][k]
             class_pred[i]=pred_tensor[i][j][k]
 
-        class_pred=torch.where(class_pred<0, torch.Tensor([0]), class_pred)
-        class_pred=torch.sqrt(class_pred)
+        class_pred= class_pred.relu
 
         class_loss = F.mse_loss(class_pred, class_target, size_average=False)
+        #class_loss = F.pairwise_distance(class_pred, class_target, p=2)
 
         return class_loss/ batch_size
 
