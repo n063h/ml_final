@@ -23,17 +23,23 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.output_num=output_num
 
+    def change_output(self,model,load_path=None,):
+        numFit = model.fc.in_features
+        model.fc = nn.Linear(numFit, self.output_num)
+        if load_path != None:
+            model.load_state_dict(torch.load(load_path))
+            # model.load_state_dict(torch.load(load_path, map_location='cpu'))
+        return model
+
     def resnet18(self,load_path=None,pretrained=False):
         """Constructs a ResNet-34 model.
         Args:
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
         model = torchvision.models.resnet18(pretrained=pretrained)
-        numFit = model.fc.in_features
-        model.fc = nn.Linear(numFit,self.output_num)
-        if load_path!=None:
-            model.load_state_dict(torch.load(load_path))
+        model=self.change_output(model,load_path)
         return model
+
 
 
     def resnet34(self,load_path=None,pretrained=False):
@@ -42,10 +48,7 @@ class ResNet(nn.Module):
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
         model = torchvision.models.resnet34(pretrained=pretrained)
-        numFit = model.fc.in_features
-        model.fc = nn.Linear(numFit,self.output_num)
-        if load_path!=None:
-            model.load_state_dict(torch.load(load_path,map_location='cpu'))
+        model = self.change_output(model, load_path)
         return model
 
 
@@ -56,10 +59,7 @@ class ResNet(nn.Module):
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
         model = torchvision.models.resnet50(pretrained=pretrained)
-        numFit = model.fc.in_features
-        model.fc = nn.Linear(numFit,self.output_num)
-        if load_path!=None:
-            model.load_state_dict(torch.load(load_path))
+        model = self.change_output(model, load_path)
         return model
 
 
@@ -69,10 +69,7 @@ class ResNet(nn.Module):
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
         model = torchvision.models.resnet101(pretrained=pretrained)
-        numFit = model.fc.in_features
-        model.fc = nn.Linear(numFit,self.output_num)
-        if load_path!=None:
-            model.load_state_dict(torch.load(load_path))
+        model = self.change_output(model, load_path)
         return model
 
 
@@ -82,8 +79,5 @@ class ResNet(nn.Module):
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
         model = torchvision.models.resnet152(pretrained=pretrained)
-        numFit = model.fc.in_features
-        model.fc = nn.Linear(numFit,self.output_num)
-        if load_path!=None:
-            model.load_state_dict(torch.load(load_path))
+        model = self.change_output(model, load_path)
         return model

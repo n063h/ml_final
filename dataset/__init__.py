@@ -57,8 +57,10 @@ class dataset(Dataset):
         box=self.boxes[index]
         label=self.labels[index]
         real_size=self.real_size[index]
-        target = self.format(box, label,real_size)  # 6*6*15
-        return a,b,target,real_size
+        # target = self.format(box, label,real_size)  # 6*6*15
+        target = torch.zeros(self.class_num)
+        target[label]=1
+        return a,b,label,real_size
 
     def convert_box(self,xmin,xmax,ymin,ymax,real_size):
         x=(xmin+xmax)/(2*real_size[0])

@@ -1,7 +1,7 @@
 import dataset as d,torch
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from net.loss import Loss
+from net.loss import *
 from net.network import ResNet
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -14,12 +14,12 @@ def count_right(pred_tensor, target_tensor):
     target_tensor: (tensor) size(batchsize,S,S,15)
     '''
     cnt=0
-    batch_size, s, _, cls_size = pred_tensor.shape
-    nonzero = torch.nonzero(target_tensor)[:, 1:3].to(device)
+    # batch_size, s, _, cls_size = pred_tensor.shape
+    batch_size, cls_size = pred_tensor.shape
     for i in range(batch_size):
-        j, k = nonzero[i]
-        class_target= target_tensor[i][j][k]
-        class_pred= pred_tensor[i][j][k]
+
+        class_target= target_tensor[i]
+        class_pred= pred_tensor[i]
         cnt+=1 if class_target.argmax()==class_pred.argmax() else 0
 
     return cnt
@@ -32,15 +32,15 @@ def eval(model,loss_func,test_loader,once=False):
     total_cnt=0
     total=0
     for i, (a, b, target, real_size) in enumerate(test_loader):
-        a = a.to(device)
-        b = b.to(device)
-        target = target[:, :, :, [1, 2, 14]]
+        batch_size = target.shape[0]
+        b =b.to(device)
         target = target.to(device)
-        a_pred = model(a).to(device)
+        target = torch.LongTensor([dict[str(int(t))] for t in target])
+        #a_pred = model(a).to(device)
         b_pred = model(b).to(device)
-        pred = (a_pred - b_pred).view(-1, 6, 6, 3)
-        loss = loss_func(pred, target).to(device)
-        cnt=count_right(pred,target)
+        #pred = (a_pred - b_pred).view(-1, 6, 6, 3)
+        loss = loss_func(b_pred, target).to(device)
+        cnt=count_right(b_pred,target)
         total_cnt+=cnt
         total+=len(target)
         print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
