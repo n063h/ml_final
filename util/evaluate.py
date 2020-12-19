@@ -29,14 +29,14 @@ def eval(model,loss_func,test_loader,once=False):
 
     total_cnt=0
     total=0
-    for i, (b,target) in enumerate(test_loader):
+    for i, (a,b,target) in enumerate(test_loader):
         model.eval()
-        batch_size = len(target)
+        a = a.to(device)
         b =b.to(device)
         target = target.to(device)
-        b_pred = model(b).to(device)
-        loss = loss_func(b_pred, target).to(device)
-        cnt=count_right(b_pred,target)
+        pred = model(b).to(device)
+        loss = loss_func(pred, target).to(device)
+        cnt=count_right(pred,target)
         total_cnt+=cnt
         total+=len(target)
         #print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
