@@ -43,10 +43,9 @@ class dataset(Dataset):
             self.boxes.append([xmin,xmax,ymin,ymax])
 
 
-    def get_img(self,img_path):
-        img = cv2.imread(img_path)
-        img = img.transpose((1, 0, 2))
-        #image = np.resize(img, (self.img_size, self.img_size, 3))
+    def get_img(self,b):
+        b = cv2.imread(b)
+        img = cv2.resize(b, (self.img_size, self.img_size))
         for t in self.transform:
             img = t(img)
         return img
@@ -62,9 +61,10 @@ class dataset(Dataset):
         return img
 
     def __getitem__(self,index):
-        a=self.get_sub_img(self.a_paths[index],self.b_paths[index])
+        #a=self.get_sub_img(self.a_paths[index],self.b_paths[index])
+        b=self.get_img(self.b_paths[index])
         label=self.labels[index]
-        return a,label
+        return b,label
 
     def convert_box(self,xmin,xmax,ymin,ymax,real_size):
         x=(xmin+xmax)/(2*real_size[0])
