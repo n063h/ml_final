@@ -1,5 +1,5 @@
 import torch.nn as nn
-import math
+import math,copy
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -130,3 +130,70 @@ class Vgg(nn.Module):
         model=self.change_output(model,load_path)
         return model
 
+
+
+class ResNet18TwoInput(nn.Module):
+
+    def __init__(self,output_num=3,pretrained=False):
+        super(ResNet18TwoInput, self).__init__()
+
+        model = torchvision.models.resnet18(pretrained=pretrained)
+        self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
+        numFit = model.fc.in_features
+        self.fc = nn.Linear(numFit, output_num)
+
+    def feature_extractor(self,img):
+        f=self.conv1(img)
+        f=self.bn1(f)
+        f = self.relu(f)
+        f = self.maxpool(f)
+        f = self.layer1(f)
+        f = self.layer2(f)
+        f = self.layer3(f)
+        f = self.layer4(f)
+        f = self.avgpool(f)
+        return f
+
+
+
+
+    def forward(self,a,b):
+        feature_a=self.feature_extractor(a)
+        feature_b = self.feature_extractor(b)
+        feature=feature_b-feature_a
+        feature=feature.view(a.shape[0],-1)
+        output=self.fc(feature)
+        return output
+
+class ResNet34TwoInput(nn.Module):
+
+    def __init__(self,output_num=3,pretrained=False):
+        super(ResNet34TwoInput, self).__init__()
+
+        model = torchvision.models.resnet34(pretrained=pretrained)
+        self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
+        numFit = model.fc.in_features
+        self.fc = nn.Linear(numFit, output_num)
+
+    def feature_extractor(self,img):
+        f=self.conv1(img)
+        f=self.bn1(f)
+        f = self.relu(f)
+        f = self.maxpool(f)
+        f = self.layer1(f)
+        f = self.layer2(f)
+        f = self.layer3(f)
+        f = self.layer4(f)
+        f = self.avgpool(f)
+        return f
+
+
+
+
+    def forward(self,a,b):
+        feature_a=self.feature_extractor(a)
+        feature_b = self.feature_extractor(b)
+        feature=feature_b-feature_a
+        feature=feature.view(a.shape[0],-1)
+        output=self.fc(feature)
+        return output

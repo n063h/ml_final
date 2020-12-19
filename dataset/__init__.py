@@ -71,12 +71,18 @@ class dataset(Dataset):
             img = t(img)
         return img
 
+    # def __getitem__(self,index):
+    #     #a=self.get_sub_img(self.a_paths[index],self.b_paths[index])
+    #     #b=self.get_img(self.b_paths[index])
+    #     b = self.get_sub_add_img(self.a_paths[index], self.b_paths[index])
+    #     label=self.labels[index]
+    #     return b,label
+
     def __getitem__(self,index):
-        #a=self.get_sub_img(self.a_paths[index],self.b_paths[index])
-        #b=self.get_img(self.b_paths[index])
-        b = self.get_sub_add_img(self.a_paths[index], self.b_paths[index])
+        a=self.get_img(self.a_paths[index])
+        b=self.get_img(self.b_paths[index])
         label=self.labels[index]
-        return b,label
+        return a,b,label
 
     def convert_box(self,xmin,xmax,ymin,ymax,real_size):
         x=(xmin+xmax)/(2*real_size[0])

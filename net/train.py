@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import WeightedRandomSampler
 from net.loss import *
-from net.network import ResNet,Vgg
+from net.network import ResNet,Vgg,ResNet18TwoInput,ResNet34TwoInput
 from torch.autograd import Variable
 from util.evaluate import eval
 import warnings,sys,os
@@ -30,13 +30,14 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
         print('\n\nStarting epoch %d / %d' % (e + 1, epoch), flush=True)
         print('Learning Rate for this epoch: {}'.format(lr), flush=True)
 
-        for i,(b,target) in enumerate(train_loader):
+        for i,(a,b,target) in enumerate(train_loader):
             batch_size=len(target)
+            a = Variable(a.to(device))
             b = Variable(b.to(device))
             target = Variable(target.to(device))
-            b_pred = model(b).to(device)
+            pred = model(a,b).to(device)
             # pred=(a_pred-b_pred).view(-1,6,6,3)
-            loss = loss_func(b_pred, target).to(device)
+            loss = loss_func(pred, target).to(device)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -91,21 +92,29 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler1)
     test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler2)
 
-    model=resnet.resnet18(pretrained=True).to(device)
+    model=ResNet18TwoInput(output_num=3,pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18WithSubAdd')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'ResNet18TwoInput')
 
-    model=resnet.resnet34(pretrained=True).to(device)
+    model=ResNet34TwoInput(output_num=3,pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34WithSubAdd')
+    t(train_loader,test_loader,model,loss_func,optimizer,lr,'ResNet34TwoInput')
 
-    model = vgg.vgg11(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11WithSubAdd')
-
-    model = vgg.vgg19(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19WithSubAdd')
+    # model=resnet.resnet18(pretrained=True).to(device)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18WithSubAdd')
+    #
+    # model=resnet.resnet34(pretrained=True).to(device)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34WithSubAdd')
+    #
+    # model = vgg.vgg11(pretrained=True).to(device)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11WithSubAdd')
+    #
+    # model = vgg.vgg19(pretrained=True).to(device)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19WithSubAdd')
 
     # model = vgg.vgg11_bn(pretrained=True).to(device)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
