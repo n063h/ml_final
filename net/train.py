@@ -81,7 +81,7 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name,train_typ
                 # print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
                 epoch_loss = epoch_loss + loss
 
-        epoch_mean_loss=epoch_loss/train_loader.batch_size
+        epoch_mean_loss=float(epoch_loss/train_loader.batch_size)
         print("%s :Epoch %d/%d| train MeanLoss: %.2f" % (model_name,e + 1, epoch, epoch_mean_loss), flush=True)
         eval_acc=eval(model,test_loader,train_type)
         if eval_acc > best_eval_acc:
