@@ -24,6 +24,7 @@ def read(data_root):
             trgt_path = trgt_dir+'/'+file_name + '.jpg'
             label_path= label_dir+'/'+file_name + '.json'
             cls,img_obj=get_obj(label_path)
+            if cls != 1 and cls != 2 and cls != 14: continue
             obj.append({'temp_path':temp_path,'trgt_path':trgt_path,'img_obj':img_obj,'cls':cls})
             cnt += 1
             if cnt % 100 == 0:
@@ -32,15 +33,14 @@ def read(data_root):
 
 def write(txt_path,data):
     with open(txt_path,'w') as f:
-        random.shuffle(data)
         for d in data:
-            if d['cls']!=1 and d['cls']!=2 and d['cls']!=14:continue
             obj_box=d['img_obj']
             #temp_path trgt_path cls x0 x1 y0 y1
             f.write('%s %s %s %s+%s+%s+%s\n'%(d['temp_path'],d['trgt_path'],str(d['cls']),str(obj_box[0]),str(obj_box[1]),str(obj_box[2]),str(obj_box[3])))
 
 if __name__ == '__main__':
     data=read('./dataset/fabric_data_new')
+    random.shuffle(data)
     write('./dataset/all_data.txt',data)
-    write('./dataset/train_data.txt', data[:1200])
-    write('./dataset/test_data.txt', data[1200:])
+    write('./dataset/train_data.txt', data[:700])
+    write('./dataset/test_data.txt', data[700:])

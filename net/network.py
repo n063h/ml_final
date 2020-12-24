@@ -27,7 +27,7 @@ class ResNet(nn.Module):
         numFit = model.fc.in_features
         model.fc = nn.Linear(numFit, self.output_num)
         if load_path != None:
-            model.load_state_dict(torch.load(load_path),map_location=device)
+            model.load_state_dict(torch.load(load_path,map_location=torch.device(device)))
         return model
 
     def resnet18(self,load_path=None,pretrained=False):
@@ -71,15 +71,59 @@ class ResNet(nn.Module):
         model = self.change_output(model, load_path)
         return model
 
+class ResNetFeatureMap(nn.Module):
 
-    def resnet152(self,load_path=None,pretrained=False):
+    def __init__(self,output_num=6*6*15):
+        super(ResNetFeatureMap, self).__init__()
+        self.output_num=output_num
+
+    def extract_feature_map(self,model,load_path=None,):
+        model.fc = nn.Sequential()
+        if load_path != None:
+            model.load_state_dict(torch.load(load_path,map_location=torch.device(device)))
+        return model
+
+    def resnet18(self,load_path=None,pretrained=False):
         """Constructs a ResNet-34 model.
         Args:
             pretrained (bool): If True, returns a model pre-trained on ImageNet
         """
-        model = torchvision.models.resnet152(pretrained=pretrained)
-        model = self.change_output(model, load_path)
+        model = torchvision.models.resnet18(pretrained=pretrained)
+        model=self.extract_feature_map(model,load_path)
         return model
+
+
+
+    def resnet34(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.resnet34(pretrained=pretrained)
+        model = self.extract_feature_map(model, load_path)
+        return model
+
+
+
+    def resnet50(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.resnet50(pretrained=pretrained)
+        model = self.extract_feature_map(model, load_path)
+        return model
+
+
+    def resnet101(self,load_path=None,pretrained=False):
+        """Constructs a ResNet-34 model.
+        Args:
+            pretrained (bool): If True, returns a model pre-trained on ImageNet
+        """
+        model = torchvision.models.resnet101(pretrained=pretrained)
+        model = self.extract_feature_map(model, load_path)
+        return model
+
 
 class Vgg(nn.Module):
     def __init__(self,output_num=3):
@@ -91,7 +135,7 @@ class Vgg(nn.Module):
         model.classifier._modules['6'] = nn.Linear(numFit, self.output_num)
         model.classifier._modules['7'] = torch.nn.LogSoftmax(dim=1)
         if load_path != None:
-            model.load_state_dict(torch.load(load_path),map_location=device)
+            model.load_state_dict(torch.load(load_path,map_location=torch.device(device)))
         return model
 
     def vgg11(self,load_path=None,pretrained=False):

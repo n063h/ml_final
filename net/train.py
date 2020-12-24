@@ -3,9 +3,11 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import WeightedRandomSampler
 from net.loss import *
-from net.network import ResNet,Vgg,ResNet18TwoInput,ResNet34TwoInput
+import matplotlib.pyplot as plt
+from net.network import ResNet,Vgg
 from torch.autograd import Variable
-from util.evaluate import eval
+from util.evaluate import *
+from dataset.json2txt import *
 import warnings,sys,os
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -13,10 +15,12 @@ epoch = 80
 lr = 0.01
 dict = {'1': 0, '2': 1, '14': 2}
 
-def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
+def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name,train_type="onlyB"):
     best_eval_acc=0
     best_eval_epoch = 0
     torch.autograd.set_detect_anomaly(True)
+    train_loss_list=[]
+    test_acc_list = []
     for e in range(epoch):
         model.train()
         epoch_loss = torch.Tensor([0]).to(device)
@@ -28,29 +32,96 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name):
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
         print('\n\nStarting epoch %d / %d' % (e + 1, epoch), flush=True)
-        print('Learning Rate for this epoch: {}'.format(lr), flush=True)
+        if train_type=='onlyB':
+            for i, (a, b, box, label, target) in enumerate(train_loader):
+                b = Variable(b.to(device))
+                # 历史遗留原因,这里的target是label
+                target = Variable(label.to(device))
+                b_pred = model(b).to(device)
+                loss = loss_func(b_pred, target).to(device)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                # print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
+                epoch_loss = epoch_loss + loss
+        elif train_type=='yolo':
+            for i, (a, b, box, label, target) in enumerate(train_loader):
+                b = Variable(b.to(device))
+                # 历史遗留原因,这里的target是label
+                target = Variable(label.to(device))
+                b_pred = model(b).to(device)
+                loss = loss_func(b_pred, target).to(device)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                # print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
+                epoch_loss = epoch_loss + loss
+        elif train_type=='BSubA':
+            for i, (b,label) in enumerate(train_loader):
+                b = Variable(b.to(device))
+                # 历史遗留原因,这里的target是label
+                target = Variable(label.to(device))
+                b_pred = model(b).to(device)
+                loss = loss_func(b_pred, target).to(device)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                # print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
+                epoch_loss = epoch_loss + loss
+        elif train_type=='BAddBSubA':
+            for i, (b,label) in enumerate(train_loader):
+                b = Variable(b.to(device))
+                # 历史遗留原因,这里的target是label
+                target = Variable(label.to(device))
+                b_pred = model(b).to(device)
+                loss = loss_func(b_pred, target).to(device)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                # print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
+                epoch_loss = epoch_loss + loss
 
-        for i,(a,b,target) in enumerate(train_loader):
-            batch_size=len(target)
-            a = Variable(a.to(device))
-            b = Variable(b.to(device))
-            target = Variable(target.to(device))
-            pred = model(a,b).to(device)
-            # pred=(a_pred-b_pred).view(-1,6,6,3)
-            loss = loss_func(pred, target).to(device)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            #print("%s :Epoch %d/%d| Step %d/%d Loss: %.2f"%(model_name,e+1,epoch,i+1,len(train_loader),loss), flush=True)
-            epoch_loss = epoch_loss + loss
-        print("%s :Epoch %d/%d| MeanLoss: %.2f" % (model_name,e + 1, epoch, epoch_loss/len(train_loader)), flush=True)
-        #训练时只测试一次
-        eval_acc=eval(model,loss_func,test_loader)
+        epoch_mean_loss=epoch_loss/train_loader.batch_size
+        print("%s :Epoch %d/%d| train MeanLoss: %.2f" % (model_name,e + 1, epoch, epoch_mean_loss), flush=True)
+        eval_acc=eval(model,test_loader,train_type)
         if eval_acc > best_eval_acc:
             best_eval_acc, best_eval_epoch = eval_acc, e
-        torch.save(model.state_dict(), './model/'+ model_name + '.pth')
+            if e>10:
+                torch.save(model.state_dict(), './model/'+ model_name + '.pth')
+        train_loss_list.append(epoch_mean_loss)
+        test_acc_list.append(eval_acc)
     print("%s :Epoch %d has best eval_acc %.2f" % (model_name,best_eval_epoch+1,best_eval_acc), flush=True)
+    try:
+        draw(train_loss_list,model_name,'train_loss')
+        draw(test_acc_list, model_name, 'test_acc')
+    except:
+        print(model_name, 'test_acc draw error')
 
+
+
+
+
+def draw(y,model_name,type):
+    x = range(epoch)
+    plt.plot(x, y, '.-')
+    plt_title = model_name
+    plt.title(plt_title)
+    plt.xlabel('epoch')
+    plt.ylabel(type)
+    plt.savefig('%s_%s.png'%(model_name,type))
+
+def get_sampler(dataset):
+    count = [dataset.labels.count(0), dataset.labels.count(1), dataset.labels.count(2)]
+    weight = torch.Tensor([count[j] for j in dataset.labels]) / len(dataset)
+    weight = 1 / weight
+    sampler = WeightedRandomSampler(weight, len(dataset))
+    return sampler
+
+def random_txt(data):
+    random.shuffle(data)
+    write('./dataset/train_data.txt', data[:700])
+    write('./dataset/test_data.txt', data[700:])
+    return
 
 if __name__ == '__main__':
     train_transformer = [
@@ -69,82 +140,85 @@ if __name__ == '__main__':
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ]
 
-    train_dataset = d.dataset('./dataset/train_data.txt', transform=train_transformer)
-    count1 = [train_dataset.labels.count(0), train_dataset.labels.count(1), train_dataset.labels.count(2)]
-    weight1 = torch.Tensor([count1[j] for j in train_dataset.labels])/len(train_dataset)
-    weight1=1/weight1
-    sampler1 = WeightedRandomSampler(weight1, len(train_dataset))
-
-
-    test_dataset = d.dataset('./dataset/test_data.txt', transform=test_transformer)
-    count2 = [test_dataset.labels.count(0), test_dataset.labels.count(1), test_dataset.labels.count(2)]
-    weight2 = torch.Tensor([count2[j] for j in test_dataset.labels])/len(test_dataset)
-    weight2=1/weight2
-    sampler2 = WeightedRandomSampler(weight2, len(test_dataset))
-
-
+    data=read('./dataset/fabric_data_new')
     resnet = ResNet(3)
     vgg=Vgg(3)
-    # loss_func = featureMapLoss()
-    loss_func = nn.CrossEntropyLoss()
-    vgg_loss_func=nn.NLLLoss()
+    yolo_loss_func = featureMapLoss()
+    vgg_loss_func = nn.NLLLoss()
+    cross_loss_func = nn.CrossEntropyLoss()
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False,sampler=sampler1)
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,sampler=sampler2)
 
-    model=ResNet18TwoInput(output_num=3,pretrained=True).to(device)
+
+
+
+##backbone test :onlyB 借用ABBox的数据集
+    random_txt(data)
+    train_dataset,test_dataset = d.ABBoxDataset('./dataset/train_data.txt', transform=train_transformer),d.ABBoxDataset('./dataset/test_data.txt', transform=test_transformer)
+    train_sampler=get_sampler(train_dataset)
+
+
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False,sampler=train_sampler)
+    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+    model=resnet.resnet18(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'ResNet18TwoInput')
+    t(train_loader,test_loader,model,cross_loss_func,optimizer,lr,'resnet18_onlyB','onlyB')
 
-    model=ResNet34TwoInput(output_num=3,pretrained=True).to(device)
+    model=resnet.resnet34(pretrained=True).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,loss_func,optimizer,lr,'ResNet34TwoInput')
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
 
-    # model=resnet.resnet18(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet18WithSubAdd')
-    #
-    # model=resnet.resnet34(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet34WithSubAdd')
-    #
-    # model = vgg.vgg11(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11WithSubAdd')
-    #
-    # model = vgg.vgg19(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19WithSubAdd')
+    #更深网络参数太多,需要减小batch_size
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
+    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
 
-    # model = vgg.vgg11_bn(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11_bnWithSqrtLoss')
-    #
-    # model = vgg.vgg19_bn(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19_bnWithSqrtLoss')
-    #
-    # model=resnet.resnet50(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet50WithPreTrain')
-    #
-    # model=resnet.resnet101(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet101WithPreTrain')
-    #
-    # model=resnet.resnet152(pretrained=True).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet152WithPreTrain')
-    #
-    # model=resnet.resnet50(pretrained=False).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet50WithoutPreTrain')
-    #
-    # model=resnet.resnet101(pretrained=False).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet101WithoutPreTrain')
-    #
-    # model=resnet.resnet152(pretrained=False).to(device)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    # t(train_loader,test_loader,model,loss_func,optimizer,lr,'resnet152WithoutPreTrain')
+    model=resnet.resnet50(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet50_onlyB','onlyB')
+
+    model=resnet.resnet101(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
+
+    model=vgg.vgg11(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11_onlyB','onlyB')
+
+    model=vgg.vgg19(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19_onlyB','onlyB')
+
+##B-A test :BSubA
+    random_txt(data)
+    train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt', transform=train_transformer), d.dataset(
+        './dataset/test_data.txt', transform=test_transformer)
+    train_sampler = get_sampler(train_dataset)
+
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+    model = resnet.resnet18(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BSubA','BSubA')
+
+    model = resnet.resnet34(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BSubA','BSubA')
+
+##B+B-A test :BAddBSubA
+    random_txt(data)
+    train_dataset, test_dataset = d.BAddBSubADataset('./dataset/train_data.txt', transform=train_transformer), d.dataset(
+        './dataset/test_data.txt', transform=test_transformer)
+    train_sampler = get_sampler(train_dataset)
+
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+    model = resnet.resnet18(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BAddBSubA','BAddBSubA')
+
+    model = resnet.resnet34(pretrained=True).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BAddBSubA','BAddBSubA')
 

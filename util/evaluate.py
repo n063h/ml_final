@@ -4,55 +4,77 @@ from torch.utils.data import DataLoader
 from net.loss import *
 from net.network import ResNet
 import warnings
+from sklearn.metrics import f1_score, precision_score, recall_score,accuracy_score
 warnings.filterwarnings("ignore", category=UserWarning)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def count_right(pred_tensor, target_tensor):
-    '''
-    pred_tensor: (tensor) size(batchsize,3 )
-    target_tensor: (tensor) size(batchsize,)
-    '''
-    cnt=0
-    batch_size, cls_size = pred_tensor.shape
-    for i in range(batch_size):
-        class_target= target_tensor[i]
-        class_pred= pred_tensor[i]
-        cnt+=1 if class_target==class_pred.argmax() else 0
+def eval(model,test_loader,train_type):
 
-    return cnt
+    total_pred=[]
+    total_target = []
+    if train_type == 'onlyB':
+        for i, (a,b,box,label,target) in enumerate(test_loader):
+            model.eval()
+            b =b.to(device)
+            target = label.to(device)
+            b_pred = model(b).to(device)
+            pred_res=b_pred.argmax(dim=1)
+            total_pred.append(pred_res)
+            total_target.append(target)
+            model.train()
+    elif train_type == 'yolo':
+        for i, (a,b,box,label,target) in enumerate(test_loader):
+            model.eval()
+            b = b.to(device)
+            target = label.to(device)
+            b_pred = model(b).to(device)
+            pred_res = b_pred.argmax(dim=1)
+            total_pred.append(pred_res)
+            total_target.append(target)
+            model.train()
+    elif train_type == 'BSubA':
+        for i, (b,label) in enumerate(test_loader):
+            model.eval()
+            b = b.to(device)
+            target = label.to(device)
+            b_pred = model(b).to(device)
+            pred_res = b_pred.argmax(dim=1)
+            total_pred.append(pred_res)
+            total_target.append(target)
+            model.train()
+    elif train_type == 'BAddBSubA':
+        for i, (b,label) in enumerate(test_loader):
+            model.eval()
+            b = b.to(device)
+            target = label.to(device)
+            b_pred = model(b).to(device)
+            pred_res = b_pred.argmax(dim=1)
+            total_pred.append(pred_res)
+            total_target.append(target)
+            model.train()
 
 
-
-
-def eval(model,loss_func,test_loader,once=False):
-
-    total_cnt=0
-    total=0
-    for i, (a,b,target) in enumerate(test_loader):
-        model.eval()
-        a = a.to(device)
-        b =b.to(device)
-        target = target.to(device)
-        pred = model(a,b).to(device)
-        loss = loss_func(pred, target).to(device)
-        cnt=count_right(pred,target)
-        total_cnt+=cnt
-        total+=len(target)
-        #print("Step %d/%d Loss: %.2f acc: %d/%d" % (i + 1, len(test_loader), loss,cnt,len(target)), flush=True)
-        model.train()
-        if once==True:return cnt/len(target)
-    print("total acc: %d/%d" % (total_cnt,total), flush=True)
-
-    return total_cnt/total
+    total_target=torch.cat(total_target)
+    total_pred = torch.cat(total_pred)
+    acc=accuracy_score(total_target, total_pred)
+    f1 = f1_score(total_target, total_pred, average='macro')
+    p = precision_score(total_target, total_pred, average='macro')
+    r = recall_score(total_target, total_pred, average='macro')
+    print('test acc: ',acc,' f1: ', f1, ' precision: ', p, ' recall: ', r)
+    return acc
 
 
 
 if __name__ == '__main__':
-    test_dataset = d.dataset('./dataset/test_data.txt', transform=[transforms.ToTensor()])
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
-
-    resnet = ResNet(6 * 6 * 15)
-    model = resnet.resnet34(load_path='./model/resnet34_ep50.pth').to(device)
-    loss_func = Loss()
-    eval(model,loss_func,test_loader)
+    test_transformer = [
+        transforms.ToPILImage(),
+        transforms.Resize((600,600)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ]
+    test_dataset = d.dataset('./dataset/test_data.txt', transform=test_transformer)
+    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+    resnet = ResNet(3)
+    model = resnet.resnet34(load_path='./model/resnet34WithSubAdd.pth').to(device)
+    eval_all(model,test_loader)
