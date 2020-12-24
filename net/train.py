@@ -152,73 +152,85 @@ if __name__ == '__main__':
 
 
 ##backbone test :onlyB 借用ABBox的数据集
-    random_txt(data)
-    train_dataset,test_dataset = d.ABBoxDataset('./dataset/train_data.txt', transform=train_transformer),d.ABBoxDataset('./dataset/test_data.txt', transform=test_transformer)
-    train_sampler=get_sampler(train_dataset)
+    try:
+        random_txt(data)
+        train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
+                                                     transform=train_transformer), d.ABBoxDataset(
+            './dataset/test_data.txt', transform=test_transformer)
+        train_sampler = get_sampler(train_dataset)
+
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+        model=resnet.resnet18(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader,test_loader,model,cross_loss_func,optimizer,lr,'resnet18_onlyB','onlyB')
 
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False,sampler=train_sampler)
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        model=resnet.resnet34(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
 
-    model=resnet.resnet18(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader,test_loader,model,cross_loss_func,optimizer,lr,'resnet18_onlyB','onlyB')
+        #更深网络参数太多,需要减小batch_size
+        train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
 
-    model=resnet.resnet34(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
+        model=resnet.resnet50(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet50_onlyB','onlyB')
 
-    #更深网络参数太多,需要减小batch_size
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
-    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+        model=resnet.resnet101(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
 
-    model=resnet.resnet50(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet50_onlyB','onlyB')
+        model=vgg.vgg11(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11_onlyB','onlyB')
 
-    model=resnet.resnet101(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
-
-    model=vgg.vgg11(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg11_onlyB','onlyB')
-
-    model=vgg.vgg19(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19_onlyB','onlyB')
+        model=vgg.vgg19(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, vgg_loss_func, optimizer, lr, 'vgg19_onlyB','onlyB')
+    except:
+        pass
 
 ##B-A test :BSubA
-    random_txt(data)
-    train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt', transform=train_transformer), d.dataset(
-        './dataset/test_data.txt', transform=test_transformer)
-    train_sampler = get_sampler(train_dataset)
+    try:
+        random_txt(data)
+        train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt', transform=train_transformer), d.dataset(
+            './dataset/test_data.txt', transform=test_transformer)
+        train_sampler = get_sampler(train_dataset)
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
 
-    model = resnet.resnet18(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BSubA','BSubA')
+        model = resnet.resnet18(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BSubA','BSubA')
 
-    model = resnet.resnet34(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BSubA','BSubA')
+        model = resnet.resnet34(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BSubA','BSubA')
+    except:
+        pass
 
 ##B+B-A test :BAddBSubA
-    random_txt(data)
-    train_dataset, test_dataset = d.BAddBSubADataset('./dataset/train_data.txt', transform=train_transformer), d.dataset(
-        './dataset/test_data.txt', transform=test_transformer)
-    train_sampler = get_sampler(train_dataset)
+    try:
+        random_txt(data)
+        train_dataset, test_dataset = d.BAddBSubADataset('./dataset/train_data.txt',
+                                                         transform=train_transformer), d.dataset(
+            './dataset/test_data.txt', transform=test_transformer)
+        train_sampler = get_sampler(train_dataset)
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
 
-    model = resnet.resnet18(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BAddBSubA','BAddBSubA')
+        model = resnet.resnet18(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BAddBSubA', 'BAddBSubA')
 
-    model = resnet.resnet34(pretrained=True).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-    t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BAddBSubA','BAddBSubA')
+        model = resnet.resnet34(pretrained=True).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BAddBSubA', 'BAddBSubA')
+    except:
+        os.system('/root/shutdown')
 

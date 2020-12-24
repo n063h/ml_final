@@ -21,8 +21,8 @@ def eval(model,test_loader,train_type):
             target = label.to(device)
             b_pred = model(b).to(device)
             pred_res=b_pred.argmax(dim=1)
-            total_pred.append(pred_res.numpy())
-            total_target.append(target.numpy())
+            total_pred.append(pred_res.cpu().numpy())
+            total_target.append(target.cpu().numpy())
             model.train()
     elif train_type == 'yolo':
         for i, (a,b,box,label,target) in enumerate(test_loader):
@@ -31,8 +31,8 @@ def eval(model,test_loader,train_type):
             target = label.to(device)
             b_pred = model(b).to(device)
             pred_res = b_pred.argmax(dim=1)
-            total_pred.append(pred_res.numpy())
-            total_target.append(target.numpy())
+            total_pred.append(pred_res.cpu().numpy())
+            total_target.append(target.cpu().numpy())
             model.train()
     elif train_type == 'BSubA':
         for i, (b,label) in enumerate(test_loader):
@@ -41,8 +41,8 @@ def eval(model,test_loader,train_type):
             target = label.to(device)
             b_pred = model(b).to(device)
             pred_res = b_pred.argmax(dim=1)
-            total_pred.append(pred_res.numpy())
-            total_target.append(target.numpy())
+            total_pred.append(pred_res.cpu().numpy())
+            total_target.append(target.cpu().numpy())
             model.train()
     elif train_type == 'BAddBSubA':
         for i, (b,label) in enumerate(test_loader):
@@ -51,8 +51,8 @@ def eval(model,test_loader,train_type):
             target = label.to(device)
             b_pred = model(b).to(device)
             pred_res = b_pred.argmax(dim=1)
-            total_pred.append(pred_res.numpy())
-            total_target.append(target.numpy())
+            total_pred.append(pred_res.cpu().numpy())
+            total_target.append(target.cpu().numpy())
             model.train()
 
 
