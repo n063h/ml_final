@@ -71,58 +71,7 @@ class ResNet(nn.Module):
         model = self.change_output(model, load_path)
         return model
 
-class ResNetFeatureMap(nn.Module):
 
-    def __init__(self,output_num=6*6*15):
-        super(ResNetFeatureMap, self).__init__()
-        self.output_num=output_num
-
-    def extract_feature_map(self,model,load_path=None,):
-        model.fc = nn.Sequential()
-        if load_path != None:
-            model.load_state_dict(torch.load(load_path,map_location=torch.device(device)))
-        return model
-
-    def resnet18(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.resnet18(pretrained=pretrained)
-        model=self.extract_feature_map(model,load_path)
-        return model
-
-
-
-    def resnet34(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.resnet34(pretrained=pretrained)
-        model = self.extract_feature_map(model, load_path)
-        return model
-
-
-
-    def resnet50(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.resnet50(pretrained=pretrained)
-        model = self.extract_feature_map(model, load_path)
-        return model
-
-
-    def resnet101(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.resnet101(pretrained=pretrained)
-        model = self.extract_feature_map(model, load_path)
-        return model
 
 
 class ResNetWithTwoInput(nn.Module):
@@ -159,3 +108,35 @@ class ResNetWithTwoInput(nn.Module):
         output=self.fc(feature)
         return output
 
+class ResnetFeatureMap(nn.Module):
+
+    def __init__(self,model_name,output_num=6*6*3,pretrained=False):
+        super(ResnetFeatureMap, self).__init__()
+        if model_name=="resnet18":
+            model = torchvision.models.resnet18(pretrained=pretrained)
+        if model_name=="resnet34":
+            model = torchvision.models.resnet34(pretrained=pretrained)
+        if model_name=="resnet101":
+            model = torchvision.models.resnet101(pretrained=pretrained)
+        self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
+        numFit = model.fc.in_features
+        self.fc = nn.Linear(numFit, output_num)
+
+    def feature_extractor(self,img):
+        f=self.conv1(img)
+        f=self.bn1(f)
+        f = self.relu(f)
+        f = self.maxpool(f)
+        f = self.layer1(f)
+        f = self.layer2(f)
+        f = self.layer3(f)
+        f = self.layer4(f)
+        f = self.avgpool(f)
+        return f
+
+    def forward(self,b):
+        feature_b = self.feature_extractor(b)
+        feature_b=feature_b.view(-1,512)
+        output=self.fc(feature_b)
+        output=output.view(-1,6,6,3)
+        return output

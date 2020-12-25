@@ -13,7 +13,7 @@ class featureMapLoss(nn.Module):
         target_tensor: (tensor) size(batchsize,S,S,15)
         '''
         batch_size,s,_,cls_size= pred_tensor.shape
-        #nonzero[k]=[i,j]表示第k个样本的i,j点是目标中心
+        #nonzero[i]=[j,j]表示第i个样本的j,k点是目标中心
         nonzero=torch.nonzero(target_tensor)[:,1:3].to(device)
         class_pred=torch.zeros(batch_size,cls_size).to(device)
         class_target=torch.zeros(batch_size,cls_size).to(device)

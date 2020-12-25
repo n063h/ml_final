@@ -27,12 +27,24 @@ def eval(model,test_loader,train_type):
     elif train_type == 'yolo':
         for i, (a,b,box,label,target) in enumerate(test_loader):
             model.eval()
+            batch_size,s,_,cls_size=b.shape
             b = b.to(device)
-            target = label.to(device)
+            target = target.to(device)
             b_pred = model(b).to(device)
-            pred_res = b_pred.argmax(dim=1)
-            total_pred.append(pred_res.cpu().numpy())
-            total_target.append(target.cpu().numpy())
+
+            nonzero = torch.nonzero(target)[:, 1:3].to(device)
+            class_pred = torch.zeros(batch_size, cls_size).to(device)
+            class_target = torch.zeros(batch_size, cls_size).to(device)
+            for i in range(batch_size):
+                j, k = nonzero[i]
+                class_target[i] = target[i][j][k]
+                class_pred[i] = b_pred[i][j][k]
+
+            class_pred = class_pred.argmax(dim=1)
+            class_target = class_target.argmax(dim=1)
+
+            total_pred.append(class_pred.cpu().numpy())
+            total_target.append(class_target.cpu().numpy())
             model.train()
     elif train_type == 'BSubA':
         for i, (b,label) in enumerate(test_loader):

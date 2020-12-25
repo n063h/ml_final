@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import WeightedRandomSampler
 from net.loss import *
 import matplotlib.pyplot as plt
-from net.network import ResNet,ResNetWithTwoInput
+from net.network import ResNet,ResNetWithTwoInput,ResnetFeatureMap
 from torch.autograd import Variable
 from util.evaluate import *
 from dataset.json2txt import *
@@ -48,7 +48,7 @@ def t(train_loader,test_loader,model,loss_func,optimizer,lr,model_name,train_typ
             for i, (a, b, box, label, target) in enumerate(train_loader):
                 b = Variable(b.to(device))
                 # 历史遗留原因,这里的target是label
-                target = Variable(label.to(device))
+                target = Variable(target.to(device))
                 b_pred = model(b).to(device)
                 loss = loss_func(b_pred, target).to(device)
                 optimizer.zero_grad()
@@ -164,7 +164,6 @@ if __name__ == '__main__':
 
     data=read('./dataset/fabric_data_new')
     resnet = ResNet(3)
-
     yolo_loss_func = featureMapLoss()
     vgg_loss_func = nn.NLLLoss()
     cross_loss_func = nn.CrossEntropyLoss()
@@ -193,7 +192,7 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BAddBSubA', 'BAddBSubA')
     except:
-        pass
+        print('BAddBSubA error')
 
 ## feature_B-featureA
     try:
@@ -218,8 +217,30 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FBSubFa', 'FBSubFa')
     except Exception:
-        pass
+        print('FBSubFa error')
 
+## yolo
+    try:
+        random_txt(data)
+        train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
+                                                     transform=train_transformer), d.dataset(
+            './dataset/test_data.txt', transform=test_transformer)
+        train_sampler = get_sampler(train_dataset)
+
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+        model=ResnetFeatureMap(model_name='resnet34')
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, yolo_loss_func, optimizer, lr, 'resnet34_yolo', 'yolo')
+
+        model=ResnetFeatureMap(model_name='resnet101')
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        t(train_loader, test_loader, model, yolo_loss_func, optimizer, lr, 'resnet101_yolo', 'yolo')
+
+
+    except Exception:
+        print('yolo error')
 
 
     # os.system('/root/shutdown')
