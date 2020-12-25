@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from net.loss import *
 from net.network import ResNet
-import warnings
+import warnings,traceback
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score,accuracy_score
 warnings.filterwarnings("ignore", category=UserWarning)

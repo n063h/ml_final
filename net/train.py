@@ -8,7 +8,7 @@ from net.network import ResNet,ResNetWithTwoInput,ResnetFeatureMap
 from torch.autograd import Variable
 from util.evaluate import *
 from dataset.json2txt import *
-import warnings,sys,os
+import warnings,sys,os,traceback
 warnings.filterwarnings("ignore", category=UserWarning)
 
 epoch = 80
@@ -192,7 +192,8 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BAddBSubA', 'BAddBSubA')
     except:
-        print('BAddBSubA error')
+        print('BAddBSubA error',flush=True)
+        traceback.print_exc()
 
 ## feature_B-featureA
     try:
@@ -217,7 +218,8 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FBSubFa', 'FBSubFa')
     except Exception:
-        print('FBSubFa error')
+        print('FBSubFa error',flush=True)
+        traceback.print_exc()
 
 ## yolo
     try:
@@ -240,7 +242,8 @@ if __name__ == '__main__':
 
 
     except Exception:
-        print('yolo error')
+        print('yolo error',flush=True)
+        traceback.print_exc()
 
 
     # os.system('/root/shutdown')
