@@ -54,6 +54,17 @@ def eval(model,test_loader,train_type):
             total_pred.append(pred_res.cpu().numpy())
             total_target.append(target.cpu().numpy())
             model.train()
+    elif train_type == 'FBSubFa':
+        for i, (a,b,box,label,target) in enumerate(test_loader):
+            model.eval()
+            a = a.to(device)
+            b = b.to(device)
+            target = label.to(device)
+            b_pred = model(a,b).to(device)
+            pred_res = b_pred.argmax(dim=1)
+            total_pred.append(pred_res.cpu().numpy())
+            total_target.append(target.cpu().numpy())
+            model.train()
 
 
     total_target=np.concatenate(total_target)

@@ -125,63 +125,16 @@ class ResNetFeatureMap(nn.Module):
         return model
 
 
-class Vgg(nn.Module):
-    def __init__(self,output_num=3):
-        super(Vgg, self).__init__()
-        self.output_num=output_num
+class ResNetWithTwoInput(nn.Module):
 
-    def change_output(self,model,load_path=None,):
-        numFit = model.classifier._modules['6'].in_features
-        model.classifier._modules['6'] = nn.Linear(numFit, self.output_num)
-        model.classifier._modules['7'] = torch.nn.LogSoftmax(dim=1)
-        if load_path != None:
-            model.load_state_dict(torch.load(load_path,map_location=torch.device(device)))
-        return model
-
-    def vgg11(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.vgg11(pretrained=pretrained)
-        model=self.change_output(model,load_path)
-        return model
-
-    def vgg19(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.vgg19(pretrained=pretrained)
-        model=self.change_output(model,load_path)
-        return model
-
-    def vgg11_bn(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.vgg11_bn(pretrained=pretrained)
-        model=self.change_output(model,load_path)
-        return model
-
-    def vgg19_bn(self,load_path=None,pretrained=False):
-        """Constructs a ResNet-34 model.
-        Args:
-            pretrained (bool): If True, returns a model pre-trained on ImageNet
-        """
-        model = torchvision.models.vgg19_bn(pretrained=pretrained)
-        model=self.change_output(model,load_path)
-        return model
-
-
-
-class ResNet18TwoInput(nn.Module):
-
-    def __init__(self,output_num=3,pretrained=False):
-        super(ResNet18TwoInput, self).__init__()
-
-        model = torchvision.models.resnet18(pretrained=pretrained)
+    def __init__(self,model_name,output_num=3,pretrained=False):
+        super(ResNetWithTwoInput, self).__init__()
+        if model_name=="resnet18":
+            model = torchvision.models.resnet18(pretrained=pretrained)
+        if model_name=="resnet34":
+            model = torchvision.models.resnet34(pretrained=pretrained)
+        if model_name=="resnet101":
+            model = torchvision.models.resnet101(pretrained=pretrained)
         self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
         numFit = model.fc.in_features
         self.fc = nn.Linear(numFit, output_num)
@@ -198,9 +151,6 @@ class ResNet18TwoInput(nn.Module):
         f = self.avgpool(f)
         return f
 
-
-
-
     def forward(self,a,b):
         feature_a=self.feature_extractor(a)
         feature_b = self.feature_extractor(b)
@@ -209,35 +159,3 @@ class ResNet18TwoInput(nn.Module):
         output=self.fc(feature)
         return output
 
-class ResNet34TwoInput(nn.Module):
-
-    def __init__(self,output_num=3,pretrained=False):
-        super(ResNet34TwoInput, self).__init__()
-
-        model = torchvision.models.resnet34(pretrained=pretrained)
-        self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
-        numFit = model.fc.in_features
-        self.fc = nn.Linear(numFit, output_num)
-
-    def feature_extractor(self,img):
-        f=self.conv1(img)
-        f=self.bn1(f)
-        f = self.relu(f)
-        f = self.maxpool(f)
-        f = self.layer1(f)
-        f = self.layer2(f)
-        f = self.layer3(f)
-        f = self.layer4(f)
-        f = self.avgpool(f)
-        return f
-
-
-
-
-    def forward(self,a,b):
-        feature_a=self.feature_extractor(a)
-        feature_b = self.feature_extractor(b)
-        feature=feature_b-feature_a
-        feature=feature.view(a.shape[0],-1)
-        output=self.fc(feature)
-        return output
