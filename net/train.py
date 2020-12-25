@@ -173,26 +173,22 @@ if __name__ == '__main__':
 
 
 
-##B+B-A test :BAddBSubA
-    try:
-        random_txt(data)
-        train_dataset, test_dataset = d.BAddBSubADataset('./dataset/train_data.txt',
-                                                         transform=train_transformer), d.dataset(
-            './dataset/test_data.txt', transform=test_transformer)
-        train_sampler = get_sampler(train_dataset)
-
-        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-
-        model = resnet.resnet34(pretrained=True).to(device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BAddBSubA', 'BAddBSubA')
-
-        model = resnet.resnet101(pretrained=True).to(device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-        t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BAddBSubA', 'BAddBSubA')
-    except:
-        print('BAddBSubA error \n'+traceback.format_exc(),flush=True)
+# ##B+B-A test :BAddBSubA
+#     try:
+#         random_txt(data)
+#         train_dataset, test_dataset = d.BAddBSubADataset('./dataset/train_data.txt',
+#                                                          transform=train_transformer), d.dataset(
+#             './dataset/test_data.txt', transform=test_transformer)
+#         train_sampler = get_sampler(train_dataset)
+#
+#         train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False, sampler=train_sampler)
+#         test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+#
+#         model = resnet.resnet101(pretrained=True).to(device)
+#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+#         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BAddBSubA', 'BAddBSubA')
+#     except:
+#         print('BAddBSubA error \n'+traceback.format_exc(),flush=True)
 
 
 ## feature_B-featureA
@@ -214,6 +210,9 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FBSubFa', 'FBSubFa')
 
+        train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+
         model=ResNetWithTwoInput(model_name='resnet101')
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FBSubFa', 'FBSubFa')
@@ -234,6 +233,9 @@ if __name__ == '__main__':
         model=ResnetFeatureMap(model_name='resnet34')
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, yolo_loss_func, optimizer, lr, 'resnet34_yolo', 'yolo')
+
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
 
         model=ResnetFeatureMap(model_name='resnet101')
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)

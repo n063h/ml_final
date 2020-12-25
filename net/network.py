@@ -79,11 +79,12 @@ class ResNetWithTwoInput(nn.Module):
     def __init__(self,model_name,output_num=3,pretrained=False):
         super(ResNetWithTwoInput, self).__init__()
         if model_name=="resnet18":
-            model = torchvision.models.resnet18(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet18(pretrained=pretrained)
         if model_name=="resnet34":
-            model = torchvision.models.resnet34(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet34(pretrained=pretrained)
         if model_name=="resnet101":
-            model = torchvision.models.resnet101(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet101(pretrained=pretrained)
+        model=model.to(device)
         self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
         numFit = model.fc.in_features
         self.fc = nn.Linear(numFit, output_num)
@@ -103,7 +104,7 @@ class ResNetWithTwoInput(nn.Module):
     def forward(self,a,b):
         feature_a=self.feature_extractor(a).to(device)
         feature_b = self.feature_extractor(b).to(device)
-        feature=feature_b-feature_a
+        feature=(feature_b-feature_a).to(device)
         feature=feature.view(a.shape[0],-1)
         output=self.fc(feature).to(device)
         return output
@@ -113,11 +114,12 @@ class ResnetFeatureMap(nn.Module):
     def __init__(self,model_name,output_num=6*6*3,pretrained=False):
         super(ResnetFeatureMap, self).__init__()
         if model_name=="resnet18":
-            model = torchvision.models.resnet18(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet18(pretrained=pretrained)
         if model_name=="resnet34":
-            model = torchvision.models.resnet34(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet34(pretrained=pretrained)
         if model_name=="resnet101":
-            model = torchvision.models.resnet101(pretrained=pretrained).to(device)
+            model = torchvision.models.resnet101(pretrained=pretrained)
+        model = model.to(device)
         self.conv1,self.bn1,self.relu,self.maxpool,self.layer1,self.layer2,self.layer3,self.layer4,self.avgpool=model.conv1,model.bn1,model.relu,model.maxpool,model.layer1,model.layer2,model.layer3,model.layer4,model.avgpool
         numFit = model.fc.in_features
         self.fc = nn.Linear(numFit, output_num)
