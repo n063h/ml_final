@@ -192,8 +192,8 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BAddBSubA', 'BAddBSubA')
     except:
-        print('BAddBSubA error',flush=True)
-        traceback.print_exc()
+        print('BAddBSubA error \n'+traceback.format_exc(),flush=True)
+
 
 ## feature_B-featureA
     try:
@@ -218,8 +218,7 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FBSubFa', 'FBSubFa')
     except Exception:
-        print('FBSubFa error',flush=True)
-        traceback.print_exc()
+        print('FBSubFa error \n'+traceback.format_exc(),flush=True)
 
 ## yolo
     try:
@@ -242,8 +241,8 @@ if __name__ == '__main__':
 
 
     except Exception:
-        print('yolo error',flush=True)
-        traceback.print_exc()
+        print('yolo error \n'+traceback.format_exc(),flush=True)
+
 
 
     # os.system('/root/shutdown')
