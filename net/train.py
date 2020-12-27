@@ -121,8 +121,8 @@ def draw(y,model_name,type):
     plt.xlabel('epoch')
     plt.ylabel(type)
     plt.savefig('%s_%s.png'%(model_name,type))
-    if type=='test_acc':
-        plt.close('all')
+    plt.close('all')
+
 
 def get_sampler(dataset):
     count = [dataset.labels.count(0), dataset.labels.count(1), dataset.labels.count(2)]
@@ -192,7 +192,83 @@ if __name__ == '__main__':
 #         print('Box as B error \n' + traceback.format_exc(), flush=True)
 
     for i in range(5):
-        ## FPN BSubA
+        # # FPN BSubA
+        # try:
+        #     random_txt(data)
+        #     train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt',
+        #                                                  transform=train_transformer), d.BSubADataset(
+        #         './dataset/test_data.txt', transform=test_transformer)
+        #     train_sampler = get_sampler(train_dataset)
+        #
+        #     train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
+        #     test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        #
+        #     model = ResnetFPN(model_name='resnet34').to(device)
+        #     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNBSubA', 'onlyB')
+        #
+        #     # train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        #     # test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+        #     #
+        #     # model = ResnetFPN(model_name='resnet101').to(device)
+        #     # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     # t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNBSubA', 'onlyB')
+        #
+        # except Exception:
+        #     print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
+        #
+        # ## FPN boxAsB
+        # try:
+        #     random_txt(data)
+        #     train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
+        #                                                  transform=train_transformer), d.ABBoxDataset(
+        #         './dataset/test_data.txt', transform=test_transformer)
+        #     train_sampler = get_sampler(train_dataset)
+        #
+        #     train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
+        #     test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        #
+        #     model = ResnetFPN(model_name='resnet34').to(device)
+        #     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNBboxAsB', 'boxAsB')
+        #
+        #     train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        #     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+        #
+        #     model = ResnetFPN(model_name='resnet101').to(device)
+        #     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNBboxAsB', 'boxAsB')
+        #
+        # except Exception:
+        #     print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
+        #
+        # ## FPN onlyB
+        # try:
+        #     random_txt(data)
+        #     train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
+        #                                                  transform=train_transformer), d.ABBoxDataset(
+        #         './dataset/test_data.txt', transform=test_transformer)
+        #     train_sampler = get_sampler(train_dataset)
+        #
+        #     train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
+        #     test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+        #
+        #     model = ResnetFPN(model_name='resnet34').to(device)
+        #     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNOnlyB', 'ABBox')
+        #
+        #     train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+        #     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+        #
+        #     model = ResnetFPN(model_name='resnet101').to(device)
+        #     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+        #     t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNOnlyB', 'ABBox')
+        #
+        #
+        # except Exception:
+        #     print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
+
+    ##B-A test :BSubA
         try:
             random_txt(data)
             train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt',
@@ -202,99 +278,23 @@ if __name__ == '__main__':
 
             train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
             test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-
-            model = ResnetFPN(model_name='resnet34').to(device)
-            optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNBSubA', 'onlyB')
-
-            # train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-            # test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
             #
-            # model = ResnetFPN(model_name='resnet101').to(device)
+            # model = resnet.resnet18(pretrained=True).to(device)
             # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            # t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNBSubA', 'onlyB')
-
-        except Exception:
-            print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
-
-        ## FPN boxAsB
-        try:
-            random_txt(data)
-            train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
-                                                         transform=train_transformer), d.ABBoxDataset(
-                './dataset/test_data.txt', transform=test_transformer)
-            train_sampler = get_sampler(train_dataset)
-
-            train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
-            test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-
-            model = ResnetFPN(model_name='resnet34').to(device)
+            # t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BSubA', 'onlyB')
+            #
+            model = resnet.resnet34(pretrained=True).to(device)
             optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNBboxAsB', 'boxAsB')
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BSubA', 'onlyB')
 
             train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
             test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
 
-            model = ResnetFPN(model_name='resnet101').to(device)
+            model = resnet.resnet101(pretrained=True).to(device)
             optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNBboxAsB', 'boxAsB')
-
-        except Exception:
-            print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
-
-        ## FPN onlyB
-        try:
-            random_txt(data)
-            train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
-                                                         transform=train_transformer), d.ABBoxDataset(
-                './dataset/test_data.txt', transform=test_transformer)
-            train_sampler = get_sampler(train_dataset)
-
-            train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
-            test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-
-            model = ResnetFPN(model_name='resnet34').to(device)
-            optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_FPNOnlyB', 'ABBox')
-
-            train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-            test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
-
-            model = ResnetFPN(model_name='resnet101').to(device)
-            optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_FPNOnlyB', 'ABBox')
-
-
-        except Exception:
-            print('FPN onlyB error \n' + traceback.format_exc(), flush=True)
-
-# ##B-A test :BSubA
-#     try:
-#         random_txt(data)
-#         train_dataset, test_dataset = d.BSubADataset('./dataset/train_data.txt',
-#                                                      transform=train_transformer), d.BSubADataset(
-#             './dataset/test_data.txt', transform=test_transformer)
-#         train_sampler = get_sampler(train_dataset)
-#
-#         # train_loader = DataLoader(train_dataset, batch_size=12, shuffle=False, sampler=train_sampler)
-#         # test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-#         #
-#         # model = resnet.resnet18(pretrained=True).to(device)
-#         # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         # t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet18_BSubA', 'onlyB')
-#         #
-#         # model = resnet.resnet34(pretrained=True).to(device)
-#         # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         # t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_BSubA', 'onlyB')
-#
-#         train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-#         test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
-#
-#         model = resnet.resnet101(pretrained=True).to(device)
-#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BSubA', 'onlyB')
-#     except:
-#         print('BSubA error \n' + traceback.format_exc(), flush=True)
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_BSubA', 'onlyB')
+        except:
+            print('BSubA error \n' + traceback.format_exc(), flush=True)
 
     # ##B+B-A test :BAddBSubA
     # try:
@@ -320,41 +320,33 @@ if __name__ == '__main__':
     # except:
     #     print('BAddBSubA error \n' + traceback.format_exc(), flush=True)
 
-# ##backbone test :onlyB 借用ABBox的数据集
-#     try:
-#         random_txt(data)
-#         train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
-#                                                      transform=train_transformer), d.ABBoxDataset(
-#             './dataset/test_data.txt', transform=test_transformer)
-#         train_sampler = get_sampler(train_dataset)
-#
-#         train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
-#         test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
-#
-#         model=resnet.resnet18(pretrained=True).to(device)
-#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         t(train_loader,test_loader,model,cross_loss_func,optimizer,lr,'resnet18_onlyB','onlyB')
-#
-#
-#         model=resnet.resnet34(pretrained=True).to(device)
-#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
-#
-#         #更深网络参数太多,需要减小batch_size
-#         train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
-#         test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
-#
-#         model=resnet.resnet50(pretrained=True).to(device)
-#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet50_onlyB','onlyB')
-#
-#         model=resnet.resnet101(pretrained=True).to(device)
-#         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-#         t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
-#
-#     except:
-#         pass
-#
+    ##backbone test :onlyB 借用ABBox的数据集
+        try:
+            random_txt(data)
+            train_dataset, test_dataset = d.ABBoxDataset('./dataset/train_data.txt',
+                                                         transform=train_transformer), d.ABBoxDataset(
+                './dataset/test_data.txt', transform=test_transformer)
+            train_sampler = get_sampler(train_dataset)
+
+            train_loader = DataLoader(train_dataset, batch_size=8, shuffle=False, sampler=train_sampler)
+            test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+
+            model=resnet.resnet34(pretrained=True).to(device)
+            optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
+
+            #更深网络参数太多,需要减小batch_size
+            train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
+            test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+
+            model=resnet.resnet101(pretrained=True).to(device)
+            optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
+
+
+        except:
+            print('backbone test error \n' + traceback.format_exc(), flush=True)
+
 
 # ## feature_B-featureA
 #     try:
@@ -414,4 +406,4 @@ if __name__ == '__main__':
 #     except Exception:
 #         print('yolo error \n'+traceback.format_exc(),flush=True)
 
-    # os.system('/root/shutdown')
+    os.system('/root/shutdown')
