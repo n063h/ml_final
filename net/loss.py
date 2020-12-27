@@ -4,10 +4,11 @@ import torch.nn.functional as F
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class featureMapLoss(nn.Module):
-    def __init__(self):
+    def __init__(self,loss='yolo'):
         super(featureMapLoss, self).__init__()
+        self.loss=loss
 
-    def forward(self, pred_tensor, target_tensor,loss='yolo'):
+    def forward(self, pred_tensor, target_tensor):
         '''
         pred_tensor: (tensor) size(batchsize,S,S,15) [x,y,w,h,c]
         target_tensor: (tensor) size(batchsize,S,S,15)
@@ -22,15 +23,16 @@ class featureMapLoss(nn.Module):
             class_target[i]=target_tensor[i][j][k]
             class_pred[i]=pred_tensor[i][j][k]
 
-        if loss=='yolo':
+        if self.loss=='yolo':
             class_loss = F.mse_loss(class_pred, class_target, size_average=True)
-        elif loss=='softmax_yolo':
+        elif self.loss=='softmax_yolo':
             class_pred = class_pred.softmax(dim=1)
             class_loss = F.mse_loss(class_pred, class_target, size_average=True)
         else:
             # 每个样本只留一维值,交叉熵自带softmax
             class_target = class_target.argmax(axis=1)
-            class_loss = nn.CrossEntropyLoss(class_pred, class_target)
+            loss_func=nn.CrossEntropyLoss()
+            class_loss = loss_func(class_pred, class_target)
 
         return class_loss
 
