@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
             model=resnet.resnet34(pretrained=True).to(device)
             optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','onlyB')
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet34_onlyB','ABBox')
 
             #更深网络参数太多,需要减小batch_size
             train_loader = DataLoader(train_dataset, batch_size=4, shuffle=False,sampler=train_sampler)
@@ -341,7 +341,7 @@ if __name__ == '__main__':
 
             model=resnet.resnet101(pretrained=True).to(device)
             optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
-            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','onlyB')
+            t(train_loader, test_loader, model, cross_loss_func, optimizer, lr, 'resnet101_onlyB','ABBox')
 
 
         except:
